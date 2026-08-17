@@ -1,0 +1,34 @@
+{
+  "n_lineas": 27,
+  "n_ses": 8,
+  "modelo_recomendado": "lineal",
+  "log_lineal": {
+    "r2": 0.6889634414563608,
+    "rmse_log": 0.7034392118451139,
+    "mape_pct": 79.17279822181219,
+    "intercepto": 3.406962653179594,
+    "coef_log_tension": 1.7642987902454217,
+    "coef_log_circuitos": 0.10030806624492314,
+    "coef_terreno": {
+      "urbano": 0.5346296906778881,
+      "rural": -0.4342490052419652,
+      "cordillera": -0.10038068543592217
+    }
+  },
+  "lineal": {
+    "r2": 0.691453109918055,
+    "rmse_usd_km": 335695.1219814669,
+    "mape_pct": 163.58143981987487,
+    "intercepto": -298483.23420623504,
+    "coef_tension_kv": 2753.75257418312,
+    "coef_circuitos": 175162.834846853,
+    "coef_terreno": {
+      "urbano": 217494.83303909557,
+      "rural": -79999.78695733592,
+      "cordillera": -137495.04608175973
+    }
+  },
+  "se_capex_por_mva_mediana_usd": 45146.66666666667,
+  "se_capex_por_mva_p25_usd": 16626.5325,
+  "se_capex_por_mva_p75_usd": 58099.898125
+}

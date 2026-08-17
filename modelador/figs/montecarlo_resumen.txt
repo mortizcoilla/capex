@@ -1,0 +1,45 @@
+==============================================================================
+RESUMEN EJECUTIVO — Monte Carlo CAPEX & VATT
+Fecha: 2026-07-20 | N simulaciones: 10,000 por escenario
+==============================================================================
+
+Escenario: linea_500_doble_cordillera
+  CAPEX  P50: USD 344.15 MM
+  CAPEX  P75: USD 404.55 MM
+  CAPEX  P90: USD 466.43 MM
+  VATT   P50: USD 39.003 MM/año
+  VATT   P90: USD 54.281 MM/año
+  Banda P10-P90 VATT: ±33.9% sobre P50
+
+Escenario: linea_220_simple_rural
+  CAPEX  P50: USD 26.81 MM
+  CAPEX  P75: USD 31.51 MM
+  CAPEX  P90: USD 36.33 MM
+  VATT   P50: USD 3.038 MM/año
+  VATT   P90: USD 4.228 MM/año
+  Banda P10-P90 VATT: ±33.9% sobre P50
+
+Escenario: se_500_220_gis_urbana
+  CAPEX  P50: USD 57.08 MM
+  CAPEX  P75: USD 70.37 MM
+  CAPEX  P90: USD 84.64 MM
+  VATT   P50: USD 6.761 MM/año
+  VATT   P90: USD 10.274 MM/año
+  Banda P10-P90 VATT: ±42.6% sobre P50
+
+Escenario: linea_220_doble_mix
+  CAPEX  P50: USD 65.92 MM
+  CAPEX  P75: USD 79.77 MM
+  CAPEX  P90: USD 94.79 MM
+  VATT   P50: USD 7.475 MM/año
+  VATT   P90: USD 11.007 MM/año
+  Banda P10-P90 VATT: ±39.4% sobre P50
+
+Escenario: hvdc_600_bipolar
+  CAPEX  P50: USD 1,633.50 MM
+  CAPEX  P75: USD 1,920.17 MM
+  CAPEX  P90: USD 2,213.89 MM
+  VATT   P50: USD 185.127 MM/año
+  VATT   P90: USD 257.641 MM/año
+  Banda P10-P90 VATT: ±33.9% sobre P50
+
