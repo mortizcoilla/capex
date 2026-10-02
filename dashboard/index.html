@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAPEX·VATT — Guía de campo interactiva · Transmisión Chile (Ley 20.936)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="./d3.min.js"></script>
+<style>
+:root{
+  --paper:#F6EFDD;
+  --paper2:#FBF6E9;
+  --ink:#1D3A5F;
+  --ink-soft:#3D5878;
+  --capex:#D95D27;
+  --vatt:#0E7C55;
+  --risk:#B3382C;
+  --gold:#B98A1C;
+  --line:rgba(29,58,95,.22);
+  --line-soft:rgba(29,58,95,.12);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Space Grotesk',system-ui,sans-serif;
+  --serif:'Newsreader',Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.6;
+  background:
+    linear-gradient(rgba(29,58,95,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(29,58,95,.05) 1px,transparent 1px),
+    linear-gradient(rgba(29,58,95,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(29,58,95,.028) 1px,transparent 1px),
+    var(--paper);
+  background-size:120px 120px,120px 120px,12px 12px,12px 12px;
+}
+::selection{background:var(--capex);color:var(--paper)}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:26px;
+  padding:14px 28px;border-bottom:1px solid var(--line);
+  background:rgba(246,239,221,.88);backdrop-filter:blur(8px);
+  font-family:var(--mono);
+}
+nav .logo{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:.5px}
+nav .logo .int{color:var(--capex);font-family:var(--serif);font-size:24px}
+nav .links{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav .links a{color:var(--ink-soft);text-decoration:none;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;padding:6px 10px;border:1px solid transparent}
+nav .links a b{color:var(--capex);font-weight:500}
+nav .links a:hover{border-color:var(--line);color:var(--ink)}
+nav .ver{font-size:10px;letter-spacing:1px;color:var(--ink-soft);text-align:right;line-height:1.5}
+@media(max-width:900px){nav .ver{display:none}}
+
+main{max-width:1180px;margin:0 auto;padding:0 26px}
+
+/* ---------- section scaffolding ---------- */
+section,header.hero{padding:76px 0 30px}
+.kicker{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ink-soft);text-transform:uppercase;margin-bottom:18px}
+.kicker::before{content:"";width:44px;height:1px;background:var(--ink)}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(56px,9vw,108px);line-height:.95;margin:8px 0 4px;letter-spacing:-2px}
+h1 .dot{color:var(--capex)}
+h2{font-family:var(--sans);font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.04;margin:0 0 14px;letter-spacing:-1px}
+h2 .accent{color:var(--capex)}
+h2 .accent.g{color:var(--vatt)}
+h2 .accent.r{color:var(--risk)}
+.lede{font-style:italic;font-size:clamp(19px,2.3vw,24px);color:var(--ink-soft);max-width:760px;margin:0 0 10px}
+.prose{max-width:780px;margin:14px 0}
+.note{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.4px}
+.note b{color:var(--capex)}
+.term{border-bottom:1px dashed var(--capex);cursor:help;position:relative}
+.term:hover::after{
+  content:attr(data-def);position:absolute;left:0;bottom:130%;z-index:40;width:min(340px,74vw);
+  background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11.5px;line-height:1.55;
+  padding:10px 12px;border-radius:2px;box-shadow:4px 4px 0 rgba(29,58,95,.18);
+}
+
+/* ---------- chips ---------- */
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 30px}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;border:1px solid var(--line);padding:7px 12px;background:rgba(255,255,255,.35)}
+.chip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px}
+
+/* ---------- frames & charts ---------- */
+.frame{position:relative;border:1px solid var(--line);background:rgba(251,246,233,.72);padding:18px 18px 12px;margin:20px 0}
+.frame .flabel{position:absolute;top:-9px;left:16px;background:var(--paper);padding:0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-soft)}
+.brk::before,.brk::after,.brk i.b2::before,.brk i.b2::after{
+  content:"";position:absolute;width:15px;height:15px;pointer-events:none
+}
+.brk::before{top:-1px;left:-1px;border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+.brk::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--ink);border-right:2px solid var(--ink)}
+.brk i.b2::before{top:-1px;right:-1px;border-top:2px solid var(--ink);border-right:2px solid var(--ink)}
+.brk i.b2::after{bottom:-1px;left:-1px;border-bottom:2px solid var(--ink);border-left:2px solid var(--ink)}
+svg text{font-family:var(--mono)}
+.axis .domain{stroke:var(--line)}
+.axis .tick line{stroke:var(--line-soft)}
+.axis .tick text{font-size:10.5px;fill:var(--ink-soft)}
+.gridl line{stroke:var(--line-soft);stroke-dasharray:2 4}
+.gridl .domain{display:none}
+.gridl text{display:none}
+.capta{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:8px 2px 0;letter-spacing:.3px}
+
+/* ---------- readout cells ---------- */
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:16px 0 6px}
+.cell{border:1px solid var(--line);background:rgba(255,255,255,.4);padding:10px 13px 9px}
+.cell label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px}
+.cell b{font-family:var(--sans);font-weight:600;font-size:21px;letter-spacing:-.4px;white-space:nowrap}
+.cell small{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-soft);margin-top:2px}
+.cell.o b{color:var(--capex)} .cell.g b{color:var(--vatt)} .cell.r b{color:var(--risk)} .cell.n b{color:var(--ink)}
+
+/* ---------- controls ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;margin:6px 0 4px}
+.ctrl{display:flex;flex-direction:column;gap:7px;min-width:170px;flex:1}
+.ctrl>label{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-soft);display:flex;justify-content:space-between}
+.ctrl>label output{color:var(--capex);font-weight:700;font-size:11.5px}
+input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent;cursor:pointer;width:100%}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;background:var(--ink);border:2.5px solid var(--paper);outline:1.5px solid var(--ink);margin-top:-6.5px;border-radius:0}
+input[type=range]:focus::-webkit-slider-thumb{outline-color:var(--capex)}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink);border:2.5px solid var(--paper);outline:1.5px solid var(--ink);border-radius:0}
+input[type=range]:disabled::-webkit-slider-thumb{background:#9aa7b5;outline-color:#9aa7b5}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--line);background:rgba(255,255,255,.4);color:var(--ink-soft);padding:7px 11px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--ink);color:var(--ink)}
+.btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.o.active{background:var(--capex);border-color:var(--capex)}
+.btn.g.active{background:var(--vatt);border-color:var(--vatt)}
+
+/* ---------- two-col ---------- */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media(max-width:920px){.duo{grid-template-columns:1fr}}
+
+/* ---------- proof ---------- */
+.proof{border:1px solid var(--line);background:rgba(251,246,233,.8);padding:20px 22px;margin:18px 0}
+.proof h3{font-family:var(--sans);font-size:19px;margin:0 0 12px;letter-spacing:-.3px}
+.proof .pstep{display:none;margin:0 0 14px;padding:12px 14px;border-left:3px solid var(--capex);background:rgba(217,93,39,.06);animation:slidein .4s ease}
+.proof .pstep.on{display:block}
+.proof .pstep .n{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--capex)}
+.proof .pstep .f{font-family:var(--mono);font-size:14.5px;margin:6px 0 2px;font-weight:700}
+.proof .pbar{height:3px;background:var(--line-soft);margin:14px 0 10px;position:relative}
+.proof .pbar i{position:absolute;left:0;top:0;bottom:0;background:var(--capex);transition:width .4s ease}
+.proof .pbtns{display:flex;gap:8px;align-items:center}
+.proof .pcount{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-left:auto}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- practice cards ---------- */
+.practice{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:20px 0}
+.pcard{border:1px solid var(--line);background:rgba(251,246,233,.85);padding:18px 20px;position:relative}
+.pcard .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--vatt)}
+.pcard h3{font-family:var(--sans);font-size:19px;margin:6px 0 8px;letter-spacing:-.3px}
+.pcard p{font-size:15px;margin:0 0 12px}
+.hint{display:none;font-family:var(--mono);font-size:12px;line-height:1.6;background:rgba(14,124,85,.07);border-left:3px solid var(--vatt);padding:8px 12px;margin:8px 0;animation:slidein .4s ease}
+.hint.on{display:block}
+.answer{display:none;font-family:var(--mono);font-size:12.5px;font-weight:700;line-height:1.6;background:rgba(217,93,39,.09);border-left:3px solid var(--capex);padding:10px 12px;margin:10px 0 4px;animation:slidein .4s ease}
+.answer.on{display:block}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+th{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-soft);text-align:left;border-bottom:1.5px solid var(--ink);padding:7px 8px;font-weight:500}
+td{padding:6.5px 8px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+tr:hover td{background:rgba(217,93,39,.05)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.scrollx{overflow-x:auto}
+
+/* ---------- methodology box ---------- */
+.meth{border:1px dashed var(--line);padding:14px 18px;margin:18px 0;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink-soft);background:rgba(255,255,255,.25)}
+.meth b{color:var(--ink)}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);margin-top:70px;padding:44px 28px 60px;background:rgba(251,246,233,.6)}
+footer .cols{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:34px}
+footer h5{font-family:var(--mono);font-size:10.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;color:var(--ink)}
+footer a,footer li{font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-decoration:none;line-height:2}
+footer a:hover{color:var(--capex)}
+footer ul{list-style:none;margin:0;padding:0}
+footer .fine{max-width:1180px;margin:34px auto 0;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);border-top:1px solid var(--line-soft);padding-top:16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+/* tooltip */
+.tt{position:fixed;z-index:99;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11.5px;line-height:1.55;padding:9px 11px;border-radius:2px;opacity:0;transition:opacity .12s;box-shadow:4px 4px 0 rgba(29,58,95,.18);max-width:320px}
+.tt b{color:#F5C08A}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin:2px 2px 8px}
+.legend i{display:inline-block;width:9px;height:9px;margin-right:6px;vertical-align:-1px}
+.hr{border:none;border-top:1px solid var(--line-soft);margin:44px 0 0}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span class="int">₵</span>CAPEX<span style="color:var(--capex)">·</span>VATT</div>
+  <div class="links">
+    <a href="#datos"><b>01·</b>Datos</a>
+    <a href="#regresion"><b>02·</b>Regresión</a>
+    <a href="#montecarlo"><b>03·</b>Monte Carlo</a>
+    <a href="#vatt"><b>04·</b>VATT</a>
+    <a href="#escenarios"><b>05·</b>Escenarios</a>
+  </div>
+  <div class="ver">v.MMXXVI<br>ed. campo</div>
+</nav>
+
+<main>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <div class="kicker">§ 00 — una guía de campo del peaje</div>
+  <h1>CAPEX<span class="dot">·</span>VATT</h1>
+  <p class="lede">la arquitectura del peaje de transmisión — tres capas: datos observados, una ley de potencia y diez mil futuros, dibujados sobre la misma curva log-lineal.</p>
+  <div class="chips">
+    <span class="chip"><i style="background:var(--capex)"></i>Regresión</span>
+    <span class="chip"><i style="background:var(--vatt)"></i>Monte Carlo</span>
+    <span class="chip"><i style="background:var(--risk)"></i>VATT · Ley 20.936</span>
+  </div>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">CAPEX unitario = f(tensión) · Chile + benchmarks · escala log-log</span>
+    <div id="heroChart"></div>
+    <div class="cells">
+      <div class="cell n"><label>punto · tensión</label><b id="hKv">—</b><small>barre la curva 60 → 800 kV</small></div>
+      <div class="cell o"><label>curva · USD/km</label><b id="hCurva">—</b><small>1 circuito · rural</small></div>
+      <div class="cell g"><label>obra observada más cercana</label><b id="hObs">—</b><small id="hObsId">—</small></div>
+      <div class="cell r"><label>elasticidad η (CAPEX vs kV)</label><b id="hEta">—</b><small>+10% kV → <span id="hEtaX">—</span>% CAPEX/km</small></div>
+    </div>
+  </div>
+
+  <p class="prose">Antes de la ingeniería de detalle, un oferente necesita estimar con 6–18 meses de anticipación cuánto costará una obra nueva y qué <span class="term" data-def="Valor Anual de Transmisión del Tramo: peaje anual que paga el sistema por la obra. VATT = anualidad del AVI + COMA.">VATT</span> pagará el sistema. Esta guía recorre la cadena completa: <b>36 obras</b> observadas (CNE, Coordinador, World Bank, ACER) → una regresión paramétrica → una simulación Monte Carlo → la fórmula regulatoria del peaje. <span class="note">Arrastrá los controles · pasá el cursor sobre cualquier punto.</span></p>
+</header>
+
+<hr class="hr">
+
+<!-- ================= 01 DATOS ================= -->
+<section id="datos">
+  <div class="kicker">§ 01 / Datos</div>
+  <h2>Treinta y seis obras,<br><span class="accent">dos mundos.</span></h2>
+  <p class="prose">La muestra mezcla <b>obras chilenas</b> (CNE, Coordinador, adjudicadas) con <b>benchmarks internacionales</b> (World Bank, ACER, NCEP, CAISO). Filtrá por origen, tipo y terreno — cada punto es una obra real con fuente y año.</p>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">explorador de obras · USD/km (líneas) y USD/MVA (S/E) vs tensión</span>
+    <div class="controls" style="margin-bottom:10px">
+      <div class="ctrl"><label>origen</label>
+        <div class="btnrow" id="fOrigen">
+          <button class="btn active" data-v="todos">Todos</button>
+          <button class="btn" data-v="cl">Solo Chile</button>
+          <button class="btn" data-v="bm">Benchmarks</button>
+        </div>
+      </div>
+      <div class="ctrl"><label>tipo de obra</label>
+        <div class="btnrow" id="fTipo">
+          <button class="btn active" data-v="linea">Líneas</button>
+          <button class="btn" data-v="se">Subestaciones</button>
+        </div>
+      </div>
+      <div class="ctrl"><label>terreno</label>
+        <div class="btnrow" id="fTerr">
+          <button class="btn active" data-v="all">Todos</button>
+          <button class="btn" data-v="rural">Rural</button>
+          <button class="btn" data-v="cordillera">Cordillera</button>
+          <button class="btn" data-v="urbano">Urbano</button>
+        </div>
+      </div>
+    </div>
+    <div id="datosChart"></div>
+    <div class="cells">
+      <div class="cell n"><label>obras en vista</label><b id="dN">—</b><small id="dNr">—</small></div>
+      <div class="cell o"><label>unitario mediano</label><b id="dMed">—</b><small id="dMedU">USD/km</small></div>
+      <div class="cell g"><label>rango unitario</label><b id="dRango" style="font-size:15px">—</b><small>mín – máx</small></div>
+      <div class="cell r"><label>CAPEX total en vista</label><b id="dCapex">—</b><small>suma USD corrientes</small></div>
+    </div>
+    <p class="capta">◉ Tamaño ∝ CAPEX total · pasar el cursor para ficha completa (fuente, año, longitud, circuitos). La obra L04 (línea sin longitud reportada) no es graficable: queda marcada en la tabla.</p>
+  </div>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">dataset consolidado · dataset.csv (36 obras)</span>
+    <div class="scrollx"><table id="dTable"></table></div>
+  </div>
+
+  <div class="meth"><b>Notas metodológicas.</b> ① Los valores están en <b>USD corrientes de cada año (2009–2026), sin deflactar</b> — la regresión los tolera porque la tensión domina la varianza, pero explica parte del residuo. ② Benchmarks (World Bank, ACER, NCEP, CAISO) usan alcances distintos: algunos incluyen servidumbres o conversoras. ③ Restringir solo a Chile cambia la muestra a n=19 y el ajuste se recalcula en vivo en §02 (el informe citaba R²≈0.55 para esa restricción — compáralo con lo que da la muestra). ④ El HVDC tiene un solo ancla (Kimal–Lo Aguirre, adjudicado 2026) — mayor error relativo.</div>
+</section>
+
+<hr class="hr">
+
+<!-- ================= 02 REGRESION ================= -->
+<section id="regresion">
+  <div class="kicker">§ 02 / Regresión</div>
+  <h2>La elasticidad<br><span class="accent">de la tensión.</span></h2>
+  <p class="prose">Ajustamos <b>log(CAPEX/km) = β₀ + β₁·log(kV) + β₂·log(circuitos) + β₃·urbano + β₄·cordillera</b> (base rural) por mínimos cuadrados, recalculado en vivo sobre la muestra visible. La curva negra es la ley de potencia resultante.</p>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">CAPEX/km vs kV · curva log-lineal ajustada · log-log</span>
+    <div class="controls" style="margin-bottom:10px">
+      <div class="ctrl"><label>muestra</label>
+        <div class="btnrow" id="rMuestra">
+          <button class="btn active" data-v="todas">Todas (n=27)</button>
+          <button class="btn" data-v="cl">Solo Chile</button>
+        </div>
+      </div>
+      <div class="ctrl"><label>curvas por terreno</label>
+        <div class="btnrow" id="rCurvas">
+          <button class="btn active" data-v="rural">Rural</button>
+          <button class="btn" data-v="cordillera">+ Cordillera</button>
+          <button class="btn" data-v="urbano">+ Urbano</button>
+        </div>
+      </div>
+    </div>
+    <div id="regChart"></div>
+    <div class="cells">
+      <div class="cell n"><label>R² (en log)</label><b id="rR2">—</b><small id="rR2n">n obras</small></div>
+      <div class="cell o"><label>elasticidad η = β₁</label><b id="rEta">—</b><small id="rEtaX">—</small></div>
+      <div class="cell g"><label>premio doble circuito</label><b id="rCtos">—</b><small>β₂ · 2º haz compartido</small></div>
+      <div class="cell r"><label>MAPE (nivel)</label><b id="rMape">—</b><small id="rMapeN">error % medio</small></div>
+    </div>
+    <div id="rCoefs" class="legend" style="margin-top:12px"></div>
+  </div>
+
+  <div class="duo">
+    <div class="frame brk"><i class="b2"></i>
+      <span class="flabel">estimado vs observado · banda ±25%</span>
+      <div id="dispChart"></div>
+      <p class="capta">Puntos sobre la diagonal: el modelo sobreestima. Banda gris: ±25% — el umbral práctico de una estimación temprana (clase 4, AACE).</p>
+    </div>
+    <div class="frame brk"><i class="b2"></i>
+      <span class="flabel">subestaciones · USD/MVA vs tensión (n=8)</span>
+      <div id="seChart"></div>
+      <p class="capta">Muestra chica (n=8): tratar como orientativo. Mediana <span id="seMed"></span> USD/MVA; recargo GIS ≈ ×1.3–1.7 sobre AIS.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="hr">
+
+<!-- ================= 03 MONTECARLO ================= -->
+<section id="montecarlo">
+  <div class="kicker">§ 03 / Monte Carlo</div>
+  <h2>Diez mil futuros<br><span class="accent g">por obra.</span></h2>
+  <p class="prose">Definí una obra tipo y el simulador — reimplementado en JavaScript con los mismos parámetros que <b>montecarlo.py</b> — perturba en conjunto: costo unitario <span class="term" data-def="Distribución lognormal con coeficiente de variación 22%, calibrada con la dispersión World Bank 2026 + ITP CNE 2022.">(lognormal CV 22%)</span>, longitud (triangular ±20%), contingencias <span class="term" data-def="Distribución Beta-PERT con mínimo 1.00, modo 1.12 y pesimista 1.45: cola larga de sobrecostos, recomendación CIGRE 2017.">(PERT 1.00/1.12/1.45)</span>, terreno y, para el peaje, tasa (6–10%), vida útil y COMA.</p>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">laboratorio · distribución del CAPEX y del VATT anual</span>
+    <div class="controls">
+      <div class="ctrl"><label>tipo de obra</label>
+        <div class="btnrow" id="mTipo">
+          <button class="btn active" data-v="linea">Línea</button>
+          <button class="btn" data-v="se">Subestación</button>
+        </div>
+      </div>
+      <div class="ctrl" id="cKv"><label>tensión <output id="oKv">500 kV</output></label>
+        <input type="range" id="mKv" min="66" max="765" step="1" value="500" list="kvTicks">
+        <datalist id="kvTicks"><option>66</option><option>110</option><option>138</option><option>154</option><option>220</option><option>230</option><option>345</option><option>500</option><option>765</option></datalist>
+      </div>
+      <div class="ctrl" id="cKm"><label>longitud <output id="oKm">200 km</output></label>
+        <input type="range" id="mKm" min="10" max="1400" step="5" value="200">
+      </div>
+      <div class="ctrl" id="cMva" style="display:none"><label>capacidad <output id="oMva">500 MVA</output></label>
+        <input type="range" id="mMva" min="40" max="3000" step="10" value="500">
+      </div>
+      <div class="ctrl"><label>circuitos</label>
+        <div class="btnrow" id="mCtos">
+          <button class="btn active" data-v="1">Simple</button>
+          <button class="btn" data-v="2">Doble</button>
+        </div>
+      </div>
+      <div class="ctrl"><label>terreno</label>
+        <div class="btnrow" id="mTerr">
+          <button class="btn active" data-v="rural">Rural</button>
+          <button class="btn" data-v="cordillera">Cordillera</button>
+          <button class="btn" data-v="urbano">Urbano</button>
+          <button class="btn" data-v="mix">Mix</button>
+        </div>
+      </div>
+      <div class="ctrl"><label>simulaciones N</label>
+        <div class="btnrow" id="mN">
+          <button class="btn" data-v="2000">2k</button>
+          <button class="btn active" data-v="10000">10k</button>
+          <button class="btn" data-v="50000">50k</button>
+        </div>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="legend"><i style="background:var(--capex)"></i>CAPEX total (MM USD)</div>
+        <div id="mcCapex"></div>
+      </div>
+      <div>
+        <div class="legend"><i style="background:var(--vatt)"></i>VATT anualizado (MM USD/año)</div>
+        <div id="mcVatt"></div>
+      </div>
+    </div>
+    <div class="cells">
+      <div class="cell n"><label>CAPEX P50</label><b id="mC50">—</b><small>mediana de N futuros</small></div>
+      <div class="cell o"><label>CAPEX P75</label><b id="mC75">—</b><small>marca -- naranja</small></div>
+      <div class="cell r"><label>CAPEX P90</label><b id="mC90">—</b><small>marca — roja</small></div>
+      <div class="cell g"><label>VATT P50</label><b id="mV50">—</b><small id="mV50s">anualidad + COMA</small></div>
+      <div class="cell n"><label>banda P10–P90 VATT</label><b id="mBanda">—</b><small>± sobre P50</small></div>
+    </div>
+  </div>
+
+  <div class="meth"><b>Motor de simulación (idéntico a montecarlo.py):</b> costo unitario ~ Lognormal(media=base×mults, CV=0.22) · longitud ~ Triangular(0.8L, L, 1.2L) · contingencia ~ Beta-PERT(1.00, 1.12, 1.45) · tasa ~ U(6%, 10%) · vida útil 30a líneas / 25a S/E (±2) · COMA ~ U(1.5%, 3.5%). Base USD/km: 110k @66kV → 850k @500kV → 1.5M @765kV; S/E 45k USD/MVA (65k si ≥500 kV), prima GIS ×1.6. Semilla fija 20260720 → resultados reproducibles.</div>
+</section>
+
+<hr class="hr">
+
+<!-- ================= 04 VATT ================= -->
+<section id="vatt">
+  <div class="kicker">§ 04 / VATT</div>
+  <h2>De CAPEX<br><span class="accent r">a peaje anual.</span></h2>
+  <p class="prose">El regulador no paga el CAPEX: paga una <b>anualidad del <span class="term" data-def="Valor de Inversión: el CAPEX reconocido y adaptado por la CNE, base del cálculo del peaje.">AVI</span></b> más la <span class="term" data-def="Costos de Operación, Mantenimiento y Administración: se aplican como porcentaje anual del AVI (1.5–3.5% en el modelo).">COMA</span>. Mové la tasa regulatoria y mirá cuánto pesa cada componente sobre la obra tipo de §03.</p>
+
+  <div class="duo">
+    <div class="frame brk"><i class="b2"></i>
+      <span class="flabel">VATT = AVI·a(tasa,vida) + COMA·AVI · obra tipo (AVI = CAPEX P50)</span>
+      <div class="controls">
+        <div class="ctrl"><label>tasa real anual <output id="oTasa">8.0%</output></label>
+          <input type="range" id="vTasa" min="4" max="12" step="0.25" value="8">
+        </div>
+        <div class="ctrl"><label>vida útil <output id="oVida">30 años</output></label>
+          <input type="range" id="vVida" min="20" max="45" step="1" value="30">
+        </div>
+        <div class="ctrl"><label>COMA <output id="oComa">2.5% AVI</output></label>
+          <input type="range" id="vComa" min="1" max="4" step="0.1" value="2.5">
+        </div>
+      </div>
+      <div id="vattChart"></div>
+      <div class="cells">
+        <div class="cell n"><label>factor anualidad a</label><b id="vA">—</b><small>r(1+r)^V / [(1+r)^V−1]</small></div>
+        <div class="cell o"><label>anualidad AVI</label><b id="vAn">—</b><small id="vAns">MM USD/año</small></div>
+        <div class="cell g"><label>COMA</label><b id="vCo">—</b><small id="vCos">MM USD/año</small></div>
+        <div class="cell r"><label>VATT total</label><b id="vTot">—</b><small id="vTots">MM USD/año</small></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="proof" id="proofCard">
+        <h3>La fórmula del peaje, paso a paso.</h3>
+        <div class="pstep"><div class="n">PASO 01</div>Todo parte del valor de inversión reconocido:<div class="f">AVI = CAPEX adaptado por la CNE</div></div>
+        <div class="pstep"><div class="n">PASO 02</div>El AVI se convierte en renta anual con la anualidad de la tasa regulatoria real r y la vida útil V:<div class="f">a = r·(1+r)ᵛ / [(1+r)ᵛ − 1]</div></div>
+        <div class="pstep"><div class="n">PASO 03</div>La anualidad del capital es simplemente:<div class="f">Cuota = AVI × a</div></div>
+        <div class="pstep"><div class="n">PASO 04</div>Se suman operación, mantenimiento y administración como fracción c del AVI:<div class="f">COMA = c · AVI</div></div>
+        <div class="pstep"><div class="n">PASO 05</div>El peaje anual del tramo queda, por tanto:<div class="f">VATT = AVI·(a + c)  ∎</div></div>
+        <div class="pbar"><i id="pBar" style="width:0%"></i></div>
+        <div class="pbtns">
+          <button class="btn o active" id="pBegin">Comenzar ▸</button>
+          <button class="btn" id="pReset">Reiniciar</button>
+          <span class="pcount" id="pCount">0 / 5</span>
+        </div>
+      </div>
+      <div class="meth" style="margin-top:0"><b>Discrepancia documental detectada en la auditoría:</b> el código usa tasa 6% y el informe dice “6% real”, pero el cuaderno regulatorio (ITD 2020-2023, vigente 2024-2026) fija <b>7% real</b>. El slider te deja comparar: a 30 años, pasar de 6% a 7% sube la anualidad ≈ +8–9%.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="hr">
+
+<!-- ================= 05 ESCENARIOS ================= -->
+<section id="escenarios">
+  <div class="kicker">§ 05 / Escenarios</div>
+  <h2>El cuaderno<br><span class="accent">de ofertas.</span></h2>
+  <p class="prose">Cinco obras tipo, simuladas con N=10.000 (<b>reportable.csv</b>, números oficiales del modelo Python). Cada barra es la banda P10–P90; el punto, la mediana. Y tres problemas resueltos, con pistas progresivas.</p>
+
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">CAPEX P10–P90 por escenario · MM USD · escala log</span>
+    <div id="escCapex"></div>
+  </div>
+  <div class="frame brk"><i class="b2"></i>
+    <span class="flabel">VATT P10–P90 por escenario · MM USD/año · escala log</span>
+    <div id="escVatt"></div>
+    <p class="capta">hover: P10 / P50 / P75 / P90 exactos. Los tres escenarios “línea” comparten banda relativa (±34% sobre P50) porque la incertidumbre domina en la tasa y las contingencias, no en la escala de la obra.</p>
+  </div>
+
+  <h2 style="font-size:26px;margin-top:40px">Tres problemas, con pistas.</h2>
+  <div class="practice">
+    <div class="pcard">
+      <div class="tag">Riesgo · contingencia de oferta</div>
+      <h3>¿Cuánto colchón dejo en la oferta?</h3>
+      <p>Licitas la línea 2×500 kV, 200 km, cordillera. El modelo da CAPEX P50 = USD 344 MM y P90 = USD 466 MM. ¿Qué contingencia razonable leave-on-table?</p>
+      <button class="btn g" onclick="reveal(this,'h1a')">Revelar pista 1</button>
+      <div class="hint" id="h1a">P90 − P50 mide la cola de sobre-costos con la incertidumbre conjunta (costo unitario × longitud × contingencias).</div>
+      <button class="btn g" onclick="reveal(this,'h1b')">Revelar pista 2</button>
+      <div class="hint" id="h1b">466/344 = 1.355 → la banda completa P50→P90 es ~35%. El P75 queda en 405 MM (+17.7%).</div>
+      <button class="btn o" onclick="reveal(this,'h1c')">Mostrar respuesta</button>
+      <div class="answer" id="h1c">Cubrir hasta P75 (+18%) es lo estándar para un oferente con balance medio; hasta P90 (+35%) solo si el contrato traslada sobrecostos. Ofertar en P50 es subestimar: la cola PERT (1.45×) es real.</div>
+    </div>
+    <div class="pcard">
+      <div class="tag">Anclaje · HVDC</div>
+      <h3>¿Confío en el modelo para el HVDC?</h3>
+      <p>El escenario hvdc_600_bipolar arroja VATT P50 = USD 185 MM/año. La adjudicación real de Kimal–Lo Aguirre (2021) cerró en VATT = USD 116,3 MM/año. ¿Qué hacer?</p>
+      <button class="btn g" onclick="reveal(this,'h2a')">Revelar pista 1</button>
+      <div class="hint" id="h2a">El dataset tiene UNA sola obra HVDC: la regresión no puede aprender la tecnología, hereda la pendiente HVAC.</div>
+      <button class="btn o" onclick="reveal(this,'h2b')">Mostrar respuesta</button>
+      <div class="answer" id="h2b">El modelo sobreestima ~59% vs el adjudicado. Para HVDC, anclar en USD 0.40–0.78 M/km (línea pura) + conversoras 170–310 USD/kW, y usar el P50 del modelo solo como techo. Una obra ancla = error relativo alto, declarado en el informe.</div>
+    </div>
+    <div class="pcard">
+      <div class="tag">Sensibilidad · tasa regulatoria</div>
+      <h3>¿Cuánto mueve el peaje la tasa?</h3>
+      <p>La obra tipo tiene AVI ≈ P50 = USD 344 MM. El proceso anterior usaba 10% real; el vigente, 7%. ¿Cuánto cambia el VATT solo por la tasa?</p>
+      <button class="btn g" onclick="reveal(this,'h3a')">Revelar pista 1</button>
+      <div class="hint" id="h3a">Anualidad a 30 años: a(10%) = 0.10608 · a(7%) = 0.08059 · a(6%) = 0.07265. Multiplicá por AVI y sumá COMA = 2.5%·AVI.</div>
+      <button class="btn o" onclick="reveal(this,'h3b')">Mostrar respuesta</button>
+      <div class="answer" id="h3b">VATT(10%) ≈ 344×0.13108 ≈ 45.1 MM/año · VATT(7%) ≈ 344×0.10559 ≈ 36.3 MM/año → la baja de tasa recorta ≈ 20% el peaje sin cambiar un tornillo. Verificá la tasa vigente del proceso antes de ofertar.</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="cols">
+    <div>
+      <h5>Fundamentos</h5>
+      <ul>
+        <li><a href="#datos">01 · Datos observados</a></li>
+        <li><a href="#regresion">02 · Regresión log-lineal</a></li>
+        <li><a href="#montecarlo">03 · Monte Carlo</a></li>
+        <li><a href="#vatt">04 · Fórmula del VATT</a></li>
+        <li><a href="#escenarios">05 · Escenarios & ofertas</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Marco regulatorio</h5>
+      <ul>
+        <li>Ley 20.936 (2016) — transmisión</li>
+        <li>CNE · ITD Valorización 2020-2023</li>
+        <li>Coordinador Eléctrico · licitaciones</li>
+        <li>World Bank 2026 · ACER 2023 (benchmarks)</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Edición</h5>
+      <ul>
+        <li>Volumen I · MMXXVI</li>
+        <li>Gráficos: D3.js v7</li>
+        <li>Datos: dataset.csv · reportable.csv</li>
+        <li>Motor: regression.py + montecarlo.py</li>
+      </ul>
+    </div>
+  </div>
+  <div class="fine">
+    <span>© MMXXVI · compuesto en Space Grotesk, Newsreader y JetBrains Mono</span>
+    <span>Estimaciones de clase 4 (−30%/+50%) · no sustituyen ingeniería de detalle</span>
+  </div>
+</footer>
+
+<div class="tt" id="tt"></div>
+
+<script>
+/* =====================================================================
+   0 · utilidades
+===================================================================== */
+const $ = s => document.querySelector(s);
+const fmtInt = new Intl.NumberFormat('es-CL',{maximumFractionDigits:0});
+const fmt1   = new Intl.NumberFormat('es-CL',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmt2   = new Intl.NumberFormat('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const MM  = v => 'USD ' + fmt1.format(v/1e6) + ' MM';
+const MMa = v => 'USD ' + fmt1.format(v/1e6) + ' MM/año';
+const TT = $('#tt');
+function tip(ev, html){ TT.innerHTML = html; TT.style.opacity = 1; move(ev); }
+function move(ev){ const x = Math.min(ev.clientX+16, innerWidth-340); TT.style.left = x+'px'; TT.style.top = (ev.clientY+14)+'px'; }
+function untip(){ TT.style.opacity = 0; }
+
+/* PRNG determinista (mulberry32) + derivados */
+function mulberry32(seed){ let a = seed>>>0; return function(){ a|=0; a = a + 0x6D2B79F5 |0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
+function gaussMaker(rng){ let spare = null; return function(){ if(spare!==null){ const s=spare; spare=null; return s; } let u=0,v=0; do{ u=rng(); }while(u===0); v=rng(); const m=Math.sqrt(-2*Math.log(u)); spare = m*Math.sin(2*Math.PI*v); return m*Math.cos(2*Math.PI*v); }; }
+function randGamma(rng, k, gauss){ if(k<1) return randGamma(rng,k+1,gauss)*Math.pow(rng(),1/k); const d=k-1/3, c=1/Math.sqrt(9*d); for(;;){ let x,v; do{ x=gauss(); v=1+c*x; }while(v<=0); v=v*v*v; const u=rng(); if(u < 1-0.0331*x*x*x*x) return d*v; if(Math.log(u) < 0.5*x*x + d*(1-v+Math.log(v))) return d*v; } }
+function randBeta(rng,a,b,g){ const x=randGamma(rng,a,g), y=randGamma(rng,b,g); return x/(x+y); }
+function randTriangular(rng,a,c,b){ const u=rng(), F=(c-a)/(b-a); return u<F ? a+Math.sqrt(u*(b-a)*(c-a)) : b-Math.sqrt((1-u)*(b-a)*(b-c)); }
+function lognormalCV(rng, mean, cv, gauss){ const s2=Math.log(1+cv*cv), s=Math.sqrt(s2), mu=Math.log(mean)-s2/2; return Math.exp(mu + s*gauss()); }
+function anualidad(avi, tasa, vida){ return avi*tasa/(1-Math.pow(1+tasa,-vida)); }
+function qsorted(sorted, q){ const i=(sorted.length-1)*q, lo=Math.floor(i), hi=Math.ceil(i); return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo); }
+
+/* =====================================================================
+   1 · datos embebidos (dataset.csv / reportable.csv)
+===================================================================== */
+const DATASET = [
+["L01","linea",500,80,2,"rural",2300,102512038,"CNE_ITP2022_3.2.4",2022],
+["L02","linea",500,300,2,"rural",1700,345080672,"CNE_ITP2022_3.2.7",2022],
+["L03","linea",500,42,2,"rural",1500,56450000,"CNE_ITD_2024_AncoaCharrúa",2024],
+["L04","linea",500,0,2,"rural",0,106349606,"Obra_Adjudicada_2024_24_4_OA_11",2024],
+["L05","linea",220,195,1,"cordillera",600,145000000,"CNE_Valorización_EncuentroLagunas",2017],
+["L06","linea",220,195,1,"cordillera",600,138000000,"CNE_Valorización_ChangosKapatur",2017],
+["L07","linea",220,100,1,"rural",400,78000000,"CNE_Valorización_NogalesPolpaico",2011],
+["L08","linea",220,215,1,"cordillera",400,168000000,"CNE_Valorización_CardonesDiegoAlmagro",2015],
+["L09","linea",220,17,1,"urbano",400,12500000,"CNE_Valorización_ElRodeoChena",2010],
+["L10","linea",220,17,1,"urbano",400,11300000,"CNE_Valorización_LoAguirreCerroNavia",2018],
+["L11","linea",220,85,1,"cordillera",500,42500000,"CNE_ITP2022_CentinelaKimal",2022],
+["L12","linea",220,142,2,"rural",400,56000000,"CNE_Valorización_CiruelosPichirropulli_2cto",2014],
+["L13","linea",110,42,2,"rural",90,355928,"Obra_Adjudicada_2021_AltoBajoMelipilla",2021],
+["L14","linea",66,75,1,"rural",40,992323,"Obra_Adjudicada_2021_NiriviloConstitucion",2021],
+["L15","linea",220,90,2,"cordillera",400,40000000,"CNE_ITD_2024_NuevaChuquicamataMiraje",2024],
+["L16","linea",500,330,2,"rural",890,350000000,"CIGRE_Transelec_AltoJahuelAncoaCharrua",2009],
+["L17","linea",500,200,2,"rural",1400,410000000,"CIGRE_Transelec_Corredor500kV_post2019",2019],
+["HVDC1","linea",600,1346,1,"cordillera",3000,1480000000,"HVDC_Kimal_LoAguirre_adjudicado",2026],
+["HVDC2","linea",500,1083,1,"cordillera",2000,551000000,"Coordinador_AnexoIII_2024_Tabla2-4",2024],
+["L20","linea",220,400,1,"cordillera",400,220000000,"CNE_PET_2024_extended_sample",2024],
+["L21","linea",110,60,1,"rural",90,7500000,"WorldBank_2026_sample_110kV",2020],
+["L22","linea",138,80,2,"rural",180,22000000,"NCEP_2003_US_138kV_double",2010],
+["L23","linea",230,150,1,"rural",400,32000000,"ACER_2023_EU_230kV",2021],
+["L24","linea",230,150,2,"rural",800,54000000,"ACER_2023_EU_230kV_double",2021],
+["L25","linea",345,200,1,"rural",600,90000000,"ACER_2023_US_345kV",2021],
+["L26","linea",345,200,2,"rural",1200,168000000,"ACER_2023_US_345kV_double",2021],
+["L27","linea",765,200,2,"rural",3000,573000000,"WorldBank_2026_765kV",2018],
+["L28","linea",500,150,1,"cordillera",1500,80000000,"CAISO_DCRT_2022",2022],
+["S01","se",500,0,0,"rural",1500,67460000,"Obra_Adjudicada_2024_OA_G15_Parinas",2024],
+["S02","se",220,0,0,"rural",400,1783474,"CNE_ITP2022_3.2.5_Patagual",2022],
+["S03","se",220,0,0,"urbano",400,7427484,"CNE_ITP2022_3.2.5_Patagual",2022],
+["S04","se",220,0,0,"rural",400,4320000,"Obra_Adjudicada_2024_OA_G03_Taltal",2024],
+["S05","se",220,0,0,"urbano",400,32959837,"Obra_Adjudicada_2025_G02_PuntaCortes",2025],
+["S06","se",500,0,0,"rural",1500,67980000,"Obra_Adjudicada_2024_OA_G15_Parinas500",2024],
+["S07","se",110,0,0,"urbano",90,21337000,"Obra_Adjudicada_2025_G01_CerroNavia_GIS",2025],
+["S08","se",66,0,0,"rural",40,2000000,"Obra_Adjudicada_2024_OA_G04_Algarrobal",2024],
+].map(r => ({id:r[0], tipo:r[1], kv:r[2], km:r[3], ctos:r[4], terreno:r[5], mva:r[6], capex:r[7], fuente:r[8], ano:r[9]}));
+
+const BM_RE = /^(WorldBank|NCEP|ACER|CAISO)_/;
+const obra = DATASET.map(d => ({...d,
+  chile: !BM_RE.test(d.fuente),
+  unit: d.tipo==='linea' && d.km>0 ? d.capex/d.km : (d.tipo==='se' && d.mva>0 ? d.capex/d.mva : null)
+}));
+
+const REPORTABLE = [
+{esc:"linea_500_doble_cordillera", etiq:"Línea 2×500 kV · 200 km · cordillera", capex:{p10:252.1,p50:344.2,p75:404.5,p90:466.4}, vatt:{p10:27.84,p50:39.00,p75:46.47,p90:54.28}}, // MM USD
+{esc:"linea_220_simple_rural",     etiq:"Línea 1×220 kV · 80 km · rural",       capex:{p10:19.6,p50:26.8,p75:31.5,p90:36.3},  vatt:{p10:2.17,p50:3.04,p75:3.62,p90:4.23}},
+{esc:"se_500_220_gis_urbana",      etiq:"S/E GIS 500/220 kV · 500 MVA · urbana", capex:{p10:38.9,p50:57.1,p75:70.4,p90:84.6},  vatt:{p10:4.52,p50:6.76,p75:8.42,p90:10.27}},
+{esc:"linea_220_doble_mix",        etiq:"Línea 2×220 kV · 120 km · mix",         capex:{p10:46.0,p50:65.9,p75:79.8,p90:94.8},  vatt:{p10:5.12,p50:7.48,p75:9.14,p90:11.01}},
+{esc:"hvdc_600_bipolar",           etiq:"HVDC ±600 kV · 1.300 km · 3.000 MW",    capex:{p10:1196.7,p50:1633.5,p75:1920.2,p90:2213.9}, vatt:{p10:132.2,p50:185.1,p75:220.6,p90:257.6}},
+];
+
+/* parámetros del modelo (montecarlo.py) */
+const COSTO_BASE = {66:110000,110:150000,138:200000,154:220000,220:300000,230:330000,345:500000,500:850000,600:900000,765:1500000};
+const MULT_TERR = {urbano:1.45, rural:1.0, cordillera:1.25};
+const P_TERR = [["rural",0.55],["cordillera",0.30],["urbano",0.15]];
+const MULT_DOBLE = 1.45, CV_COSTO = 0.22, VAR_LONG = 0.20;
+const PERT = [1.00, 1.12, 1.45];
+const SEED = 20260720;
+
+/* =====================================================================
+   2 · regresión OLS en vivo  (log-lineal, base rural)
+===================================================================== */
+function fitRegresion(rows){
+  const pts = rows.filter(d => d.tipo==='linea' && d.km>0 && d.kv>0);
+  const n = pts.length;
+  const X = pts.map(d => [1, Math.log(d.kv), Math.log(Math.max(d.ctos,1)), d.terreno==='urbano'?1:0, d.terreno==='cordillera'?1:0]);
+  const y = pts.map(d => Math.log(d.capex/d.km));
+  // normal equations (5×5) + eliminación gaussiana
+  const p = 5, A = Array.from({length:p},()=>new Array(p+1).fill(0));
+  for(let i=0;i<n;i++){ for(let j=0;j<p;j++){ for(let k=0;k<p;k++) A[j][k]+=X[i][j]*X[i][k]; A[j][p]+=X[i][j]*y[i]; } }
+  for(let c=0;c<p;c++){ let piv=c; for(let r=c+1;r<p;r++) if(Math.abs(A[r][c])>Math.abs(A[piv][c])) piv=r;
+    [A[c],A[piv]]=[A[piv],A[c]];
+    for(let r=c+1;r<p;r++){ const f=A[r][c]/A[c][c]; for(let k=c;k<=p;k++) A[r][k]-=f*A[c][k]; } }
+  const b = new Array(p).fill(0);
+  for(let r=p-1;r>=0;r--){ let s=A[r][p]; for(let k=r+1;k<p;k++) s-=A[r][k]*b[k]; b[r]=s/A[r][r]; }
+  let ssr=0, sst=0; const ybar=d3.mean(y); const yhat=[];
+  for(let i=0;i<n;i++){ const h=b[0]+b[1]*X[i][1]+b[2]*X[i][2]+b[3]*X[i][3]+b[4]*X[i][4]; yhat.push(h); ssr+=(y[i]-h)**2; sst+=(y[i]-ybar)**2; }
+  const mape = d3.mean(pts.map((d,i)=>Math.abs((d.capex/d.km)-Math.exp(yhat[i]))/(d.capex/d.km)))*100;
+  return {n, b, r2:1-ssr/sst, rmseLog:Math.sqrt(ssr/n), mape, pts, yhat};
+}
+let REG = fitRegresion(obra);
+
+/* =====================================================================
+   3 · motor Monte Carlo (paridad con montecarlo.py)
+===================================================================== */
+function kvBase(kv){ return COSTO_BASE[kv] ?? (kv<110?110000: kv<230?300000: kv<500?500000:850000); }
+function simular({kv, ctos, km, terreno, mva=0, n=10000, seed=SEED}){
+  const rng = mulberry32(seed), gauss = gaussMaker(rng);
+  const capex = new Array(n), vatt = new Array(n);
+  const esLinea = km > 0;
+  for(let i=0;i<n;i++){
+    let costo;
+    if(esLinea){
+      let base = kvBase(kv) * (ctos>=2?MULT_DOBLE:1);
+      let multT = MULT_TERR[terreno];
+      if(terreno==='mix'){ let u=rng(), acc=0, t='rural'; for(const [k,p] of P_TERR){ acc+=p; if(u<acc){t=k;break;} } multT = MULT_TERR[t]; }
+      costo = lognormalCV(rng, base*multT, CV_COSTO, gauss);
+    }else{
+      let base = (kv>=500?65000:45000) * (terreno==='urbano'?1.6:1);
+      costo = lognormalCV(rng, base, 0.30, gauss);
+    }
+    const longitud = esLinea ? randTriangular(rng, km*(1-VAR_LONG), km, km*(1+VAR_LONG)) : 0;
+    // Beta-PERT
+    const [o,mo,p] = PERT; const mu=(o+4*mo+p)/6;
+    const al=1+4*(mo-o)/(p-o), be=1+4*(p-mo)/(p-o);
+    const conting = o + (p-o)*randBeta(rng, al, be, gauss);
+    let cap;
+    if(esLinea) cap = costo*longitud*conting;
+    else{
+      const capReal = mva*randTriangular(rng,0.9,1.0,1.1);
+      cap = costo*capReal*conting;
+    }
+    const tasa = 0.06 + 0.04*rng();
+    const vida = (esLinea?30:25) + [-2,0,2][Math.floor(rng()*3)];
+    const comaP = 0.015 + 0.02*rng();
+    capex[i] = cap;
+    vatt[i]  = anualidad(cap, tasa, vida) + cap*comaP;
+  }
+  const cs = [...capex].sort(d3.ascending), vs = [...vatt].sort(d3.ascending);
+  const Q = a => ({p10:qsorted(a,.1), p50:qsorted(a,.5), p75:qsorted(a,.75), p90:qsorted(a,.9), media:d3.mean(a)});
+  return {capex:Q(cs), vatt:Q(vs), cs, vs, banda: (Q(vs).p90-Q(vs).p10)/Q(vs).p50*100};
+}
+
+/* =====================================================================
+   4 · andamiaje de gráficos
+===================================================================== */
+function mkChart(sel, h){
+  const node = $(sel);
+  const w = node.clientWidth || 560;
+  const m = {t:14, r:14, b:34, l:58};
+  const svg = d3.select(node).append('svg').attr('width',w).attr('height',h);
+  const g = svg.append('g').attr('transform',`translate(${m.l},${m.t})`);
+  return {svg, g, w: w-m.l-m.r, h: h-m.t-m.b, W:w, H:h, node};
+}
+
+/* =====================================================================
+   5 · HERO — curva con punto que barre kV
+===================================================================== */
+let heroState = {kv:220};
+function renderHero(){
+  const box = $('#heroChart'); box.innerHTML='';
+  const C = mkChart('#heroChart', 340);
+  const x = d3.scaleLog().domain([60,850]).range([0,C.w]);
+  const yMax = 2.2e6, y = d3.scaleLog().domain([6e3, yMax]).range([C.h,0]);
+  const b = REG.b;
+  const curva = kv => Math.exp(b[0] + b[1]*Math.log(kv) + b[2]*Math.log(1)); // 1 cto, rural
+  C.g.append('g').attr('class','gridl').call(d3.axisBottom(x).ticks(6,',').tickSize(-C.h));
+  C.g.append('g').attr('class','gridl').call(d3.axisLeft(y).ticks(5,',').tickSize(-C.w));
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(x).ticks(6,',').tickFormat(d3.format(',')));
+  C.g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(1).tickFormat(v=>v/1000+'k'));
+  C.g.append('text').attr('x',6).attr('y',14).attr('font-size',10).attr('fill','var(--ink-soft)').attr('letter-spacing',1.5).text('CAPEX/KM = F(KV) · η = '+fmt2.format(b[1])+' · DATOS + CURVA LOG-LINEAL');
+
+  // puntos de obras (líneas)
+  const terrCol = {urbano:'var(--gold)', rural:'var(--ink)', cordillera:'var(--risk)'};
+  C.g.selectAll('circle.pt').data(obra.filter(d=>d.tipo==='linea'&&d.km>0)).join('circle')
+    .attr('class','pt').attr('cx',d=>x(d.kv)).attr('cy',d=>y(d.unit))
+    .attr('r',4).attr('fill',d=>terrCol[d.terreno]).attr('fill-opacity',.55)
+    .attr('stroke','var(--paper)').attr('stroke-width',1)
+    .on('mousemove',(ev,d)=>tip(ev,`<b>${d.id}</b> · ${d.kv} kV · ${d.ctos}×cto · ${d.terreno}<br>USD ${fmtInt.format(d.unit)}/km · ${fmt1.format(d.capex/1e6)} MM total<br><span style="opacity:.7">${d.fuente} (${d.ano})</span>`))
+    .on('mouseleave',untip);
+
+  // curva
+  const line = d3.line().x(d=>x(d.kv)).y(d=>y(curva(d.kv))).curve(d3.curveMonotoneX);
+  const datos = d3.range(60,851,6).map(kv=>({kv}));
+  C.g.append('path').attr('d',line(datos)).attr('fill','none').attr('stroke','var(--ink)').attr('stroke-width',2);
+
+  // marcador que barre
+  const drop = C.g.append('line').attr('stroke','var(--capex)').attr('stroke-dasharray','3 4').attr('stroke-width',1);
+  const dot = C.g.append('circle').attr('r',6).attr('fill','var(--capex)').attr('stroke','var(--paper)').attr('stroke-width',2);
+  const ang = C.g.append('text').attr('font-size',11).attr('font-weight',700).attr('fill','var(--capex)').attr('text-anchor','end');
+  function upd(kv){
+    const c = curva(kv);
+    dot.attr('cx',x(kv)).attr('cy',y(c));
+    drop.attr('x1',x(kv)).attr('x2',x(kv)).attr('y1',y(c)).attr('y2',C.h);
+    ang.attr('x',x(kv)-9).attr('y',y(c)-12).text(fmtInt.format(Math.round(c))+' USD/km');
+    $('#hKv').textContent = fmtInt.format(Math.round(kv)) + ' kV';
+    $('#hCurva').textContent = fmtInt.format(Math.round(c));
+    $('#hEta').textContent = '+' + fmt2.format(b[1]);
+    $('#hEtaX').textContent = '+' + fmt1.format(b[1]*10) + '%';
+    // obra más cercana en log-kV
+    const pts = REG.pts; let best=pts[0], bd=1e9;
+    for(const p of pts){ const d=Math.abs(Math.log(p.kv)-Math.log(kv)); if(d<bd){bd=d;best=p;} }
+    $('#hObs').textContent = 'USD ' + fmtInt.format(Math.round(best.unit)) + '/km';
+    $('#hObsId').textContent = best.id + ' · ' + best.terreno + ' · ' + best.ano;
+  }
+  upd(heroState.kv);
+  let dir = 1, last = null;
+  (function anim(ts){
+    if(last!==null){ const dt=Math.min(ts-last,50); heroState.kv *= Math.pow(10, dir*dt/9000); // ~9 s por década... escalado
+      if(heroState.kv>780){heroState.kv=780;dir=-1} if(heroState.kv<70){heroState.kv=70;dir=1}
+      upd(heroState.kv); }
+    last = ts; requestAnimationFrame(anim);
+  })(performance.now());
+  C.svg.on('mousemove', ev => { const [mx] = d3.pointer(ev); heroState.kv = x.invert(Math.max(0,Math.min(C.w,mx))); upd(heroState.kv); })
+       .on('mouseleave', ()=>{});
+}
+
+/* =====================================================================
+   6 · §01 — explorador de datos
+===================================================================== */
+const datosState = {origen:'todos', tipo:'linea', terr:'all'};
+function datosFiltrados(){
+  return obra.filter(d => (datosState.tipo==='linea' ? d.tipo==='linea' : d.tipo==='se')
+    && (datosState.origen==='todos' || (datosState.origen==='cl'?d.chile:!d.chile))
+    && (datosState.terr==='all' || d.terreno===datosState.terr));
+}
+function renderDatos(){
+  const box=$('#datosChart'); box.innerHTML='';
+  const C = mkChart('#datosChart', 380);
+  const esLinea = datosState.tipo==='linea';
+  const data = datosFiltrados().filter(d=>d.unit);
+  const x = d3.scaleLog().domain([60,850]).range([0,C.w]);
+  const units = data.map(d=>d.unit);
+  const y = d3.scaleLog().domain([Math.max(500, d3.min(units)*0.6), d3.max(units)*1.6]).range([C.h,0]);
+  C.g.append('g').attr('class','gridl').call(d3.axisBottom(x).ticks(6,',').tickSize(-C.h));
+  C.g.append('g').attr('class','gridl').call(d3.axisLeft(y).ticks(5,',').tickSize(-C.w));
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(x).ticks(6,',').tickFormat(d3.format(',')));
+  C.g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(1).tickFormat(v=>v>=1e6? fmt1.format(v/1e6)+'M' : v/1000+'k'));
+  const terrCol = {urbano:'var(--gold)', rural:'var(--ink)', cordillera:'var(--risk)'};
+  const terrShp = {urbano:d3.symbolCircle, rural:d3.symbolSquare, cordillera:d3.symbolTriangle};
+  const sym = d3.symbol().size(d=>Math.min(650, Math.max(70, d.capex/3.5e6)));
+  C.g.selectAll('path.pt').data(data).join('path')
+    .attr('transform',d=>`translate(${x(d.kv)},${y(d.unit)})`)
+    .attr('d', sym.type(d=>terrShp[d.terreno]))
+    .attr('fill',d=>terrCol[d.terreno]).attr('fill-opacity',.6)
+    .attr('stroke','var(--ink)').attr('stroke-width',.7)
+    .on('mousemove',(ev,d)=>tip(ev,`<b>${d.id}</b> · ${d.kv} kV · ${d.terreno}${d.tipo==='linea'?' · '+d.ctos+'×cto · '+d.km+' km':' · '+fmtInt.format(d.mva)+' MVA'}<br>${d.chile?'Chile':'benchmark'} · USD ${fmtInt.format(Math.round(d.unit))}/${esLinea?'km':'MVA'}<br><span style="opacity:.7">${d.fuente} · ${d.ano}</span>`))
+    .on('mouseleave',untip);
+  C.g.append('text').attr('x',6).attr('y',26).attr('font-size',10).attr('fill','var(--ink-soft)').attr('letter-spacing',1.5).text(esLinea?'USD/KM · ESCALA LOG':'USD/MVA · ESCALA LOG');
+
+  $('#dN').textContent = datosFiltrados().length;
+  $('#dNr').textContent = data.length + ' graficables';
+  const u = data.map(d=>d.unit).sort(d3.ascending);
+  $('#dMed').textContent = u.length ? fmtInt.format(Math.round(d3.median(u))) : '—';
+  $('#dMedU').textContent = esLinea?'USD/km':'USD/MVA';
+  $('#dRango').textContent = u.length ? fmtInt.format(Math.round(u[0]))+' – '+fmtInt.format(Math.round(u[u.length-1])) : '—';
+  $('#dCapex').textContent = MM(d3.sum(datosFiltrados(),d=>d.capex));
+
+  // tabla
+  const rows = datosFiltrados();
+  const d3fmt = d => `<tr><td>${d.id}</td><td>${d.tipo==='linea'?'línea':'S/E'}</td><td class="num">${d.kv}</td><td class="num">${d.km||'—'}</td><td class="num">${d.ctos||'—'}</td><td>${d.terreno}</td><td class="num">${d.unit?fmtInt.format(Math.round(d.unit)):'<span style="color:var(--risk)">s/d</span>'}</td><td class="num">${fmtInt.format(d.capex)}</td><td>${d.chile?'CL':'BM'}</td><td>${d.ano}</td><td style="max-width:230px;overflow:hidden;text-overflow:ellipsis">${d.fuente}</td></tr>`;
+  $('#dTable').innerHTML = `<thead><tr><th>id</th><th>tipo</th><th>kV</th><th>km</th><th>ctos</th><th>terreno</th><th>unit USD</th><th>CAPEX USD</th><th>origen</th><th>año</th><th>fuente</th></tr></thead><tbody>${rows.map(d3fmt).join('')}</tbody>`;
+}
+function wireBtns(sel, cb){ d3.selectAll(sel+' .btn').on('click', function(){ d3.selectAll(sel+' .btn').classed('active',false); d3.select(this).classed('active',true); cb(this.dataset.v); }); }
+wireBtns('#fOrigen', v=>{datosState.origen=v; renderDatos();});
+wireBtns('#fTipo',   v=>{datosState.tipo=v; renderDatos();});
+wireBtns('#fTerr',   v=>{datosState.terr=v; renderDatos();});
+
+/* =====================================================================
+   7 · §02 — regresión
+===================================================================== */
+const regState = {muestra:'todas', curvas:new Set(['rural'])};
+function renderRegresion(){
+  const data = regState.muestra==='cl' ? obra.filter(d=>d.chile) : obra;
+  REG = fitRegresion(data);
+  const b = REG.b;
+  const box=$('#regChart'); box.innerHTML='';
+  const C = mkChart('#regChart', 400);
+  const x = d3.scaleLog().domain([60,850]).range([0,C.w]);
+  const y = d3.scaleLog().domain([6e3, 2.2e6]).range([C.h,0]);
+  C.g.append('g').attr('class','gridl').call(d3.axisBottom(x).ticks(6,',').tickSize(-C.h));
+  C.g.append('g').attr('class','gridl').call(d3.axisLeft(y).ticks(5,',').tickSize(-C.w));
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(x).ticks(6,',').tickFormat(d3.format(',')));
+  C.g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(1).tickFormat(v=>v/1000+'k'));
+  const terrCol = {urbano:'var(--gold)', rural:'var(--ink)', cordillera:'var(--risk)'};
+  const terrShp = {urbano:d3.symbolCircle, rural:d3.symbolSquare, cordillera:d3.symbolTriangle};
+  const sym = d3.symbol().size(110);
+  C.g.selectAll('path.pt').data(REG.pts).join('path')
+    .attr('transform',d=>`translate(${x(d.kv)},${y(d.capex/d.km)})`)
+    .attr('d', sym.type(d=>terrShp[d.terreno]))
+    .attr('fill',d=>terrCol[d.terreno]).attr('fill-opacity',.65).attr('stroke','var(--paper)').attr('stroke-width',.8)
+    .on('mousemove',(ev,d)=>{
+      const pred = Math.exp(b[0]+b[1]*Math.log(d.kv)+b[2]*Math.log(Math.max(d.ctos,1))+(d.terreno==='urbano'?b[3]:d.terreno==='cordillera'?b[4]:0));
+      const obs = d.capex/d.km;
+      tip(ev,`<b>${d.id}</b> · ${d.kv} kV · ${d.terreno}<br>observado USD ${fmtInt.format(Math.round(obs))}/km<br>modelo USD ${fmtInt.format(Math.round(pred))}/km (${(obs/pred-1)*100>=0?'+':''}${fmt1.format((obs/pred-1)*100)}%)`);}
+    ).on('mouseleave',untip);
+  // curvas por terreno
+  const col2 = {rural:'var(--ink)', cordillera:'var(--risk)', urbano:'var(--gold)'};
+  for(const t of regState.curvas){
+    const f = kv => Math.exp(b[0] + b[1]*Math.log(kv) + b[2]*0 + (t==='urbano'?b[3]:t==='cordillera'?b[4]:0));
+    const line = d3.line().x(d=>x(d.kv)).y(d=>y(f(d.kv))).curve(d3.curveMonotoneX);
+    C.g.append('path').attr('d',line(d3.range(60,851,6).map(kv=>({kv})))).attr('fill','none').attr('stroke',col2[t]).attr('stroke-width',2).attr('stroke-dasharray',t==='rural'?'none':'5 4');
+  }
+  C.g.append('text').attr('x',6).attr('y',C.h-8).attr('font-size',10).attr('fill','var(--ink-soft)').attr('letter-spacing',1.2).text('LOG(CAPEX/KM) = '+fmt2.format(b[0])+' + '+fmt2.format(b[1])+'·LOG(KV) + '+fmt2.format(b[2])+'·LOG(CTOS) + β·TERRENO');
+
+  $('#rR2').textContent = fmt2.format(REG.r2);
+  $('#rR2n').textContent = 'n = '+REG.n+' obras'+(regState.muestra==='cl'?' chilenas':' (CL+BM)');
+  $('#rEta').textContent = '+'+fmt2.format(b[1]);
+  $('#rEtaX').textContent = '+10% kV → +'+fmt1.format(b[1]*10)+'% CAPEX/km';
+  $('#rCtos').textContent = '+'+fmt1.format((Math.exp(b[2])-1)*100)+'%';
+  $('#rMape').textContent = fmt1.format(REG.mape)+'%';
+  $('#rMapeN').textContent = regState.muestra==='cl'?'sin benchmarks, error ↑':'incluye benchmarks';
+  const terrEff = [['urbano vs rural', b[3]],['cordillera vs rural', b[4]]].map(([k,v])=>`${k}: ${v>=0?'+':''}${fmt1.format((Math.exp(v)-1)*100)}%`);
+  $('#rCoefs').innerHTML =
+    `<span>β₀=${fmt2.format(b[0])}</span><span>β₁(ln kV)=<b style="color:var(--capex)">${fmt2.format(b[1])}</b></span><span>β₂(ln ctos)=${fmt2.format(b[2])}</span><span>${terrEff[0]}*</span><span>${terrEff[1]}*</span><span style="opacity:.6">*n urbano=2 — tratar con cautela</span>`;
+
+  // dispersión estimado vs observado
+  const box2=$('#dispChart'); box2.innerHTML='';
+  const C2 = mkChart('#dispChart', 330);
+  const obsv = REG.pts.map(d=>d.capex/d.km);
+  const dom = [Math.min(...obsv)*0.5, Math.max(...obsv)*1.9];
+  const xy = d3.scaleLog().domain(dom).range([0,C2.w]);
+  const yy = d3.scaleLog().domain(dom).range([C2.h,0]);
+  C2.g.append('g').attr('class','gridl').call(d3.axisBottom(xy).ticks(5,',').tickSize(-C2.h));
+  C2.g.append('g').attr('class','gridl').call(d3.axisLeft(yy).ticks(5,',').tickSize(-C2.w));
+  C2.g.append('g').attr('class','axis').attr('transform',`translate(0,${C2.h})`).call(d3.axisBottom(xy).ticks(1).tickFormat(v=>v/1000+'k'));
+  C2.g.append('g').attr('class','axis').call(d3.axisLeft(yy).ticks(1).tickFormat(v=>v/1000+'k'));
+  // banda ±25%
+  C2.g.append('path').attr('d',`M${xy(dom[0])},${yy(dom[0]*0.75)}L${xy(dom[1])},${yy(dom[1]*0.75)}L${xy(dom[1])},${yy(dom[1]*1.25)}L${xy(dom[0])},${yy(dom[0]*1.25)}Z`).attr('fill','rgba(29,58,95,.09)');
+  C2.g.append('line').attr('x1',xy(dom[0])).attr('y1',yy(dom[0])).attr('x2',xy(dom[1])).attr('y2',yy(dom[1])).attr('stroke','var(--ink)').attr('stroke-width',1.6);
+  C2.g.selectAll('circle').data(REG.pts).join('circle')
+    .attr('cx',(d,i)=>xy(obsv[i])).attr('cy',(d,i)=>yy(Math.exp(REG.yhat[i])))
+    .attr('r',4.5).attr('fill','var(--capex)').attr('fill-opacity',.7).attr('stroke','var(--paper)')
+    .on('mousemove',(ev,d)=>{const i=REG.pts.indexOf(d); tip(ev,`<b>${d.id}</b><br>obs USD ${fmtInt.format(Math.round(obsv[i]))}/km · est USD ${fmtInt.format(Math.round(Math.exp(REG.yhat[i])))}/km`);})
+    .on('mouseleave',untip);
+  C2.g.append('text').attr('x',4).attr('y',14).attr('font-size',10).attr('fill','var(--ink-soft)').attr('letter-spacing',1.5).text('ESTIMADO (MODELO) VS OBSERVADO · ±25%');
+
+  // S/E chart
+  const ses = obra.filter(d=>d.tipo==='se' && d.unit);
+  const box3=$('#seChart'); box3.innerHTML='';
+  const C3 = mkChart('#seChart', 330);
+  const x3 = d3.scaleLog().domain([55,700]).range([0,C3.w]);
+  const y3 = d3.scaleLog().domain([Math.max(500,d3.min(ses,d=>d.unit)*0.5), d3.max(ses,d=>d.unit)*1.8]).range([C3.h,0]);
+  C3.g.append('g').attr('class','gridl').call(d3.axisBottom(x3).ticks(4,',').tickSize(-C3.h));
+  C3.g.append('g').attr('class','gridl').call(d3.axisLeft(y3).ticks(4,',').tickSize(-C3.w));
+  C3.g.append('g').attr('class','axis').attr('transform',`translate(0,${C3.h})`).call(d3.axisBottom(x3).ticks(4,',').tickFormat(d3.format(',')));
+  C3.g.append('g').attr('class','axis').call(d3.axisLeft(y3).ticks(1).tickFormat(v=>fmtInt.format(v)));
+  C3.g.selectAll('circle').data(ses).join('circle')
+    .attr('cx',d=>x3(d.kv)).attr('cy',d=>y3(d.unit)).attr('r',6)
+    .attr('fill',d=>d.terreno==='urbano'?'var(--gold)':'var(--vatt)').attr('fill-opacity',.7).attr('stroke','var(--paper)').attr('stroke-width',1.2)
+    .on('mousemove',(ev,d)=>tip(ev,`<b>${d.id}</b> · ${d.kv} kV · ${d.terreno}${d.terreno==='urbano'?' (GIS)':''}<br>USD ${fmtInt.format(Math.round(d.unit))}/MVA · ${fmtInt.format(d.mva)} MVA<br><span style="opacity:.7">${d.fuente} · ${d.ano}</span>`))
+    .on('mouseleave',untip);
+  C3.g.append('text').attr('x',4).attr('y',14).attr('font-size',10).attr('fill','var(--ink-soft)').attr('letter-spacing',1.5).text('USD/MVA · N=8 · ORIENTATIVO');
+  $('#seMed').textContent = fmtInt.format(Math.round(d3.median(ses,d=>d.unit)));
+}
+wireBtns('#rMuestra', v=>{regState.muestra=v; renderRegresion();});
+d3.selectAll('#rCurvas .btn').on('click', function(){
+  const v = this.dataset.v;
+  if(v==='rural'){ regState.curvas = new Set(['rural']); d3.selectAll('#rCurvas .btn').classed('active',function(){return this.dataset.v==='rural';}); }
+  else{ regState.curvas.has(v) ? (regState.curvas.size>1 && regState.curvas.delete(v)) : regState.curvas.add(v);
+    d3.select(this).classed('active', regState.curvas.has(v)); }
+  renderRegresion();
+});
+
+/* =====================================================================
+   8 · §03 — Monte Carlo lab
+===================================================================== */
+const mcState = {tipo:'linea', kv:500, km:200, mva:500, ctos:1, terreno:'rural', n:10000};
+let mcResult = null;
+function runMC(){
+  mcResult = simular({kv:mcState.kv, ctos:+mcState.ctos, km:mcState.tipo==='linea'?+mcState.km:0,
+                      terreno:mcState.terreno, mva:+mcState.mva, n:+mcState.n});
+}
+function renderMC(){
+  runMC();
+  const R = mcResult;
+  drawHist('#mcCapex', R.cs, 'var(--capex)', 'CAPEX total · MM USD', v=>v/1e6);
+  drawHist('#mcVatt',  R.vs, 'var(--vatt)',  'VATT · MM USD/año',   v=>v/1e6);
+  $('#mC50').textContent = 'USD '+fmt1.format(R.capex.p50/1e6)+' MM';
+  $('#mC75').textContent = 'USD '+fmt1.format(R.capex.p75/1e6)+' MM';
+  $('#mC90').textContent = 'USD '+fmt1.format(R.capex.p90/1e6)+' MM';
+  $('#mV50').textContent = 'USD '+fmt2.format(R.vatt.p50/1e6)+' MM/año';
+  $('#mV50s').textContent = 'media '+fmt2.format(R.vatt.media/1e6)+' · P90 '+fmt2.format(R.vatt.p90/1e6);
+  $('#mBanda').textContent = '±'+fmt1.format(R.banda/2)+'%';
+}
+function drawHist(sel, arr, color, label, toV){
+  const box=$(sel); box.innerHTML='';
+  const C = mkChart(sel, 270);
+  const vals = arr.map(toV);
+  const xt = d3.scaleLinear().domain([0, d3.max(vals)*1.06]).range([0,C.w]);
+  const yt = d3.scaleLinear().domain([0,1]).range([C.h,0]);
+  const bins = d3.bin().thresholds(44)(vals);
+  const yMaxBin = d3.max(bins,d=>d.length)/arr.length;
+  yt.domain([0, yMaxBin*1.12]);
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(xt).ticks(6).tickFormat(v=>fmt1.format(v)));
+  C.g.append('g').attr('class','axis').call(d3.axisLeft(yt).ticks(4).tickFormat(d3.format('.1%')));
+  C.g.append('g').attr('class','gridl').call(d3.axisLeft(yt).ticks(4).tickSize(-C.w));
+  C.g.selectAll('rect').data(bins).join('rect')
+    .attr('x',d=>xt(d.x0)+.5).attr('width',d=>Math.max(0.5,xt(d.x1)-xt(d.x0)-1))
+    .attr('y',C.h).attr('height',0)
+    .transition().duration(500).ease(d3.easeCubicOut)
+    .attr('y',d=>yt(d.length/arr.length)).attr('height',d=>C.h-yt(d.length/arr.length));
+  C.g.selectAll('rect').attr('fill',color).attr('fill-opacity',.78).attr('stroke','var(--paper)').attr('stroke-width',.5);
+  // líneas de cuantiles
+  const qs = [['P50',.5,'solid'],['P75',.75,'dash'],['P90',.9,'dash2']];
+  const sorted=[...vals].sort(d3.ascending);
+  for(const [nm,q,st] of qs){
+    const v = qsorted(sorted,q), col = nm==='P50'?'var(--ink)':nm==='P75'?'var(--gold)':'var(--risk)';
+    const gq = C.g.append('g');
+    gq.append('line').attr('x1',xt(v)).attr('x2',xt(v)).attr('y1',0).attr('y2',C.h)
+      .attr('stroke',col).attr('stroke-width',1.6).attr('stroke-dasharray',st==='solid'?'none':'4 3');
+    gq.append('text').attr('x',xt(v)+4).attr('y',12+qs.findIndex(z=>z[0]===nm)*12).attr('font-size',9.5).attr('fill',col).attr('font-weight',700)
+      .text(`${nm} ${fmt1.format(v)}`).attr('text-anchor', xt(v)>C.w-70?'end':'start').attr('x', xt(v)>C.w-70?xt(v)-4:xt(v)+4);
+  }
+  C.svg.on('mousemove', ev => { const [mx]=d3.pointer(ev); const v=xt.invert(Math.max(0,Math.min(C.w,mx)));
+    const sorted2=[...vals].sort(d3.ascending);
+    const below = d3.bisectLeft(sorted2, v)/sorted2.length;
+    tip(ev,`<b>${label}</b><br>x = USD ${fmt1.format(v)} MM<br>P(x) = ${fmt1.format(below*100)}%`); })
+       .on('mouseleave',untip);
+}
+wireBtns('#mTipo', v=>{
+  mcState.tipo=v;
+  $('#cKm').style.display = v==='linea'?'':'none';
+  $('#cMva').style.display = v==='se'?'':'none';
+  $('#mCtos').style.visibility = v==='linea'?'visible':'hidden';
+  renderMC();
+});
+wireBtns('#mCtos', v=>{mcState.ctos=v; renderMC();});
+wireBtns('#mTerr', v=>{mcState.terreno=v; renderMC();});
+wireBtns('#mN',    v=>{mcState.n=v; renderMC();});
+$('#mKv').addEventListener('input', function(){ mcState.kv=+this.value; $('#oKv').textContent=this.value+' kV'; renderMC(); });
+$('#mKm').addEventListener('input', function(){ mcState.km=+this.value; $('#oKm').textContent=this.value+' km'; renderMC(); });
+$('#mMva').addEventListener('input', function(){ mcState.mva=+this.value; $('#oMva').textContent=this.value+' MVA'; renderMC(); });
+
+/* =====================================================================
+   9 · §04 — VATT
+===================================================================== */
+let AVI_REF = 344.2e6; // P50 obra tipo (reportable)
+function renderVATT(){
+  const tasa = +$('#vTasa').value/100, vida = +$('#vVida').value, coma = +$('#vComa').value/100;
+  $('#oTasa').textContent = (tasa*100).toFixed(2).replace('.',',')+'%';
+  $('#oVida').textContent = vida+' años';
+  $('#oComa').textContent = (coma*100).toFixed(1).replace('.',',')+'% AVI';
+  const a = tasa/(1-Math.pow(1+tasa,-vida));
+  const anual = AVI_REF*a, co = AVI_REF*coma, tot = anual+co;
+  $('#vA').textContent = fmt4(a);
+  $('#vAn').textContent = fmt1.format(anual/1e6);
+  $('#vCo').textContent = fmt1.format(co/1e6);
+  $('#vTot').textContent = fmt1.format(tot/1e6);
+  $('#vAns').textContent = fmt1.format(a*100)+'% del AVI';
+  $('#vCos').textContent = (coma*100).toFixed(1).replace('.',',')+'% del AVI';
+  $('#vTots').textContent = fmt1.format(tot/AVI_REF*100)+'% del AVI/año';
+
+  // gráfico: VATT vs tasa con descomposición apilada
+  const box=$('#vattChart'); box.innerHTML='';
+  const C = mkChart('#vattChart', 300);
+  const tasas = d3.range(0.04, 0.1201, 0.0025);
+  const vidaF = vida;
+  const stack = tasas.map(t => ({t, co: coma*AVI_REF/1e6, an: AVI_REF*(t/(1-Math.pow(1+t,-vidaF)))/1e6}));
+  const x = d3.scaleLinear().domain([0.04,0.12]).range([0,C.w]);
+  const y = d3.scaleLinear().domain([0, d3.max(stack,d=>d.an+d.co)*1.15]).range([C.h,0]);
+  const area = (acc, key) => d3.area().x(d=>x(d.t)).y0(d=>y(acc(d))).y1(d=>y(acc(d)+d[key])).curve(d3.curveMonotoneX);
+  const base = d=>0;
+  C.g.append('path').attr('d',area(base,'co')(stack)).attr('fill','var(--vatt)').attr('fill-opacity',.55);
+  C.g.append('path').attr('d',area(d=>d.co,'an')(stack)).attr('fill','var(--capex)').attr('fill-opacity',.6);
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(x).ticks(5).tickFormat(v=>(v*100).toFixed(0)+'%'));
+  C.g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(5).tickFormat(v=>fmt1.format(v)));
+  C.g.append('g').attr('class','gridl').call(d3.axisLeft(y).ticks(5).tickSize(-C.w));
+  // marca en tasa actual
+  const vNow = {t:tasa, co, an:anual/1e6};
+  C.g.append('line').attr('x1',x(tasa)).attr('x2',x(tasa)).attr('y1',0).attr('y2',C.h).attr('stroke','var(--ink)').attr('stroke-width',1.5).attr('stroke-dasharray','4 3');
+  C.g.append('circle').attr('cx',x(tasa)).attr('cy',y((vNow.an+vNow.co))).attr('r',5).attr('fill','var(--ink)').attr('stroke','var(--paper)').attr('stroke-width',1.5);
+  C.g.append('text').attr('x',x(tasa)+6).attr('y',y(vNow.an+vNow.co)-8).attr('font-size',10.5).attr('font-weight',700).attr('fill','var(--ink)').text('VATT '+fmt1.format(vNow.an+vNow.co)+' MM/año');
+}
+function fmt4(v){ return v.toFixed(4).replace('.',','); }
+$('#vTasa').addEventListener('input', renderVATT);
+$('#vVida').addEventListener('input', renderVATT);
+$('#vComa').addEventListener('input', renderVATT);
+
+/* proof */
+let pStep = 0;
+function proofShow(){
+  d3.selectAll('#proofCard .pstep').classed('on',(d,i)=>i<pStep);
+  $('#pBar').style.width = (pStep/5*100)+'%';
+  $('#pCount').textContent = pStep+' / 5';
+  $('#pBegin').textContent = pStep>=5 ? 'Completo ∎' : 'Siguiente ▸';
+  $('#pBegin').classList.toggle('active', pStep<5);
+}
+$('#pBegin').addEventListener('click',()=>{ if(pStep<5) pStep++; proofShow(); });
+$('#pReset').addEventListener('click',()=>{ pStep=0; proofShow(); });
+
+/* =====================================================================
+   10 · §05 — escenarios (dumbbells P10-P90)
+===================================================================== */
+function dumbbell(sel, key, unit, fmtV){
+  const box=$(sel); box.innerHTML='';
+  const C = mkChart(sel, 5*56+46);
+  const mx = d3.scaleLog().domain([key==='capex'?15:2, key==='capex'?3000:320]).range([0,C.w]);
+  const y = d3.scaleBand().domain(REPORTABLE.map(d=>d.esc)).range([0,C.h]).padding(0.42);
+  const gx = key==='capex' ? [20,50,100,200,500,1000,2000] : [2,5,10,20,50,100,200];
+  C.g.append('g').attr('class','axis').attr('transform',`translate(0,${C.h})`).call(d3.axisBottom(mx).tickValues(gx).tickFormat(d3.format(',')));
+  C.g.append('g').attr('class','gridl').call(d3.axisBottom(mx).tickValues(gx).tickSize(-C.h));
+  const row = C.g.selectAll('g.row').data(REPORTABLE).join('g').attr('transform',d=>`translate(0,${y(d.esc)+y.bandwidth()/2})`);
+  row.append('text').attr('x',4).attr('y',-6).attr('font-size',10.5).attr('fill','var(--ink)').attr('font-weight',500).text(d=>d.etiq);
+  row.append('line').attr('x1',d=>mx(d[key].p10)).attr('x2',d=>mx(d[key].p90)).attr('y1',0).attr('y2',0)
+    .attr('stroke','var(--line)').attr('stroke-width',7).attr('stroke-linecap','round')
+    .attr('stroke',key==='capex'?'rgba(217,93,39,.28)':'rgba(14,124,85,.28)');
+  row.append('circle').attr('cx',d=>mx(d[key].p10)).attr('r',4.5).attr('fill','var(--paper)').attr('stroke',key==='capex'?'var(--capex)':'var(--vatt)').attr('stroke-width',1.8);
+  row.append('circle').attr('cx',d=>mx(d[key].p90)).attr('r',4.5).attr('fill','var(--paper)').attr('stroke',key==='capex'?'var(--capex)':'var(--vatt)').attr('stroke-width',1.8);
+  row.append('circle').attr('cx',d=>mx(d[key].p50)).attr('r',5.5).attr('fill',key==='capex'?'var(--capex)':'var(--vatt)')
+    .on('mousemove',(ev,d)=>tip(ev,`<b>${d.etiq}</b><br>P10 ${fmtV(d[key].p10)} · P50 <b>${fmtV(d[key].p50)}</b><br>P75 ${fmtV(d[key].p75)} · P90 ${fmtV(d[key].p90)}`))
+    .on('mouseleave',untip);
+  row.append('text').attr('y',-6).attr('font-size',9.5).attr('fill','var(--ink-soft)')
+    .attr('x',d=> mx(d[key].p50) > C.w-160 ? mx(d[key].p50)-12 : mx(d[key].p50)+12)
+    .attr('text-anchor',d=> mx(d[key].p50) > C.w-160 ? 'end' : 'start')
+    .attr('opacity',d=> mx(d[key].p50) < 270 ? 0 : 1)
+    .text(d=>'P50 '+fmtV(d[key].p50));
+}
+function renderEscenarios(){
+  dumbbell('#escCapex','capex','MMUSD', v=>'USD '+fmt1.format(v)+' MM');
+  dumbbell('#escVatt','vatt','MMa',  v=>'USD '+fmt2.format(v)+' MM/año');
+}
+function reveal(btn, id){
+  document.getElementById(id).classList.add('on');
+  btn.style.opacity=.45; btn.disabled=true;
+}
+
+/* =====================================================================
+   11 · arranque + resize
+===================================================================== */
+function renderAll(){
+  renderHero();
+  renderDatos();
+  renderRegresion();
+  renderMC();
+  renderVATT();
+  renderEscenarios();
+  proofShow();
+}
+let rsT=null;
+window.addEventListener('resize',()=>{ clearTimeout(rsT); rsT=setTimeout(renderAll,180); });
+if(window.d3){ renderAll(); }
+else document.body.innerHTML = '<p style="font-family:monospace;padding:40px">Este dashboard necesita D3.js desde CDN (conexión a internet).</p>';
+</script>
+</body>
+</html>
